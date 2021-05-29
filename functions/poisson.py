@@ -1,43 +1,56 @@
 import numpy as np
 
-def divergence(ux, uy, div, delt, delx, dely):
-    for x in range(div.shape[0]):
-        for y in range(div.shape[1]):
-            div[x][y] = ((ux[x + 2][y + 1] - ux[x + 1][y + 1]) / delx +
-                         (uy[x + 1][y + 2] - uy[x + 1][y + 1]) / dely
-                         ) / delt
+def divergence(ux_ast, uy_ast, delt, delx, dely):
+    bef_ux = ux_ast[:-1, :]
+    aft_ux = ux_ast[1:, :]
+
+    bef_uy = uy_ast[:, :-1]
+    aft_uy = uy_ast[:, 1:]
+
+    div = ((aft_ux - bef_ux) / delx + (aft_uy - bef_uy) / dely) / delt
 
     return div
 
 
-def SOR(ux, uy, div, delt, delx, dely, P, eps, w):
-    for x in range(1, P.shape[0] - 1):
-        for y in range(1, P.shape[1] - 1):
-            P_calced = ((P[x + 1][y] + P[x - 1][y]) / np.power(delx, 2) +
-                        (P[x][y + 1] + P[x][y - 1]) / np.power(dely, 2) - 
-                        div[x][y]
-                        ) * np.power(delx * dely, 2) * 0.5 / (np.power(delx, 2) + np.power(dely, 2))
-            error = max(abs(P[x][y] - P_calced), eps)
-            P[x][y] = (1 - w) * P[x][y] + w * P_calced
+def Jacobi(div, delt, delx, dely, P, eps, w):
+    P_calc = np.copy(P)
+    cnst = pow(delx * dely, 2) * 0.5 / (pow(delx, 2) + pow(dely, 2))
 
-    return error, P
+    bef_Px = P[:-2, 1:-1]
+    aft_Px = P[2:, 1:-1]
+    bef_Py = P[1:-1, :-2]
+    aft_Py = P[1:-1, 2:]
+
+    P_calc[1:-1, 1:-1] = ((aft_Px + bef_Px) / delx ** 2 +
+                          (aft_Py + bef_Py) / dely ** 2 - div[1:-1, 1:-1]) * cnst
+    error = np.max(np.abs(P_calc[1:-1, 1:-1] - P[1:-1, 1:-1]))
+    error = max(error, eps)
+
+    return error, P_calc
 
 
-def Poisson(ux, uy, div, delt, delx, dely, P, eps, w, count_max):
+def Poisson(ux_ast, uy_ast, delt, delx, dely, P, eps, w, count_max):
     error = 1
     count = 0
-    div = divergence(ux, uy, div, delt, delx, dely)
+    div = divergence(ux_ast, uy_ast, delt, delx, dely)
+
     while error > eps or count > count_max:
-        error, P = SOR(ux, uy, div, delt, delx, dely, P, eps, w)
+        error, P = Jacobi(div, delt, delx, dely, P, eps, w)
         count += 1
 
     return P
 
 
-def fix_u(ux, uy, P, delt, delx, dely, p_rho):
-    for x in range(P.shape[0] - 1):
-        for y in range(P.shape[1] - 1):
-            ux[x + 2][y + 1] -= (P[x + 1][y] - P[x][y]) * delt / delx
-            uy[x + 1][y + 2] -= (P[x][y + 1] - P[x][y]) * delt / dely
+def fix_u(ux_ast, uy_ast, P, delt, delx, dely, p_rho):
+    ux = np.zeros_like(ux_ast)
+    uy = np.zeros_like(uy_ast)
+
+    bef_Px = P[:-1, :]
+    aft_Px = P[1:, :]
+    bef_Py = P[:, :-1]
+    aft_Py = P[:, 1:]
+
+    ux[1:-1, :] = ux_ast[1:-1, :] - (aft_Px - bef_Px) * delt / (delx * p_rho)
+    uy[:, 1:-1] = uy_ast[:, 1:-1] - (aft_Py - bef_Py) * delt / (dely * p_rho)
 
     return ux, uy
