@@ -39,8 +39,6 @@ def simulate(Lx, Ly, H, v0, theta, time_range, delt=0.01, dell=0.1, p_rho=1.293,
     ux = np.zeros((divLx + 3, divLy + 2))
     uy = np.zeros((divLx + 2, divLy + 3))
     P = np.zeros((divLx + 2, divLy + 2))
-    fig = plt.figure()
-    plts = []
     passed_time = 0
     theta = np.deg2rad(theta)
     plt.xlim(-0.1, Lx + 0.1)
@@ -48,6 +46,10 @@ def simulate(Lx, Ly, H, v0, theta, time_range, delt=0.01, dell=0.1, p_rho=1.293,
 
     #First Condition
     ux, uy = ini.force_and_first(ux, uy, delt, H, v0, theta)
+
+    #First Plot (must be white)
+    plts = []
+    fig = plt.figure()
 
     #First Plot (must be white)
     plt_img = plots.plot(ux, uy, divLx, divLy, delt, dell, dell, v0, plt, passed_time)
