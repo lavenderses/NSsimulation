@@ -1,12 +1,11 @@
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.animation as anime
+'''import matplotlib.pyplot as plt
+import matplotlib.animation as anime'''
 from decimal import Decimal, ROUND_HALF_UP
 from functions import advection_viscosity as adv
 from functions import initialization as ini
 from functions import poisson
 from functions import plots
-
 
 '''
 -------variables-----------------------------------------------------
@@ -25,7 +24,7 @@ H            : Fan Height
 v0           : The First Velocity Condition
 eps          : Tiny Error Constance That Needs in SOR
 w            : Accelation Constance
-cnt_max    : The Number That You Wanna Repeat
+cnt_max      : The Number That You Wanna Repeat
 P            : The Presure at Point (x, y)
 fx, fy       : The Forces in x, y Directions at Point (x, y)[numpy array]
 ---------------------------------------------------------------------
@@ -40,23 +39,20 @@ def simulate(Lx, Ly, H, v0, theta, time_range, delt=0.01, dell=0.1, p_rho=1.293,
     uy = np.zeros((divLx + 2, divLy + 3))
     P = np.zeros((divLx + 2, divLy + 2))
     passed_time = 0
+    num = 0
     theta = np.deg2rad(theta)
-    plt.xlim(-0.1, Lx + 0.1)
-    plt.ylim(-0.1, Ly + 0.1)
 
     #First Condition
     ux, uy = ini.force_and_first(ux, uy, delt, H, v0, theta)
 
     #First Plot (must be white)
-    plts = []
-    fig = plt.figure()
-
-    #First Plot (must be white)
-    plt_img = plots.plot(ux, uy, divLx, divLy, delt, dell, dell, v0, plt, passed_time)
-    plts.append([plt_img])
+    plots.plot(ux, uy, divLx, divLy, delt, dell, dell, v0, passed_time, num)
+    '''plt.colorbar(plt_img)
+    plts.append([plt_img])'''
 
     while passed_time < time_range:
         print(passed_time)
+        num += 1
         #Advection
         ux_ast = adv.advectionX(ux, uy, delt, dell, dell)
         uy_ast = adv.advectionY(ux, uy, delt, dell, dell)
@@ -73,12 +69,10 @@ def simulate(Lx, Ly, H, v0, theta, time_range, delt=0.01, dell=0.1, p_rho=1.293,
 
         #Plot
         passed_time += delt
-        plt_img = plots.plot(ux, uy, divLx, divLy, delt, dell, dell, v0, plt, passed_time)
-        plts.append([plt_img])
+        plots.plot(ux, uy, divLx, divLy, delt, dell, dell, v0, passed_time, num)
 
-    ani = anime.ArtistAnimation(fig, plts, interval=100, blit=True)
-    ani.save('./animation.mp4', writer="ffmpeg")
-#    ani.show()
+    '''ani = anime.ArtistAnimation(fig, plts, interval=100, blit=True)
+    ani.save('./animation.mp4', writer="ffmpeg")'''
 
 
 if __name__ == '__main__':

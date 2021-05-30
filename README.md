@@ -11,6 +11,11 @@ And I also adopted "Jacobi Method" as a iterative method to solve Poisson Eq.
 There are some for loops in functions that solve Advection Eqation because of complicated conditions.    
 
 
+## ENVIRONMENT
+Ubuntu 20.04.2 LTS
+anaconda 4.10.1
+
+
 ## HOW TO USE
 This simulation is assuming a 2D room. It has Height and Width.    
 Variable Lx means its Width and Ly does its Height.    
@@ -44,5 +49,5 @@ I put the meanings of each arge above.
 Output format is a animation file(animation.mp4). This will be created in this directory.      
 
 
-Thank you for seeing my repository.  
+## Thank you for seeing my repository!!  
 
