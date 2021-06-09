@@ -1,31 +1,39 @@
 import numpy as np
-import matplotlib.pyplot as plt
 
 
-def plot(ux, uy, Lx, Ly, delt, delx, dely, v0, t, num):
+def plot(ux, uy, lx, ly, delt, delx, dely, v0, t, num, ax):
     #Start Points
-    X = [np.full(ux.shape[1], j * dely) for j in range(uy.shape[0])]
-    Y = [np.arange(0, ux.shape[1]) * delx] * (uy.shape[0])
-    X = np.array(X)
-    Y = np.array(Y)
+    x = [np.full(ux.shape[1], j * dely) for j in range(uy.shape[0])]
+    y = [np.arange(0, ux.shape[1]) * delx] * (uy.shape[0])
+    x = np.array(x)
+    y = np.array(y)
 
     #Vectors
-    U = ux[:uy.shape[0], :ux.shape[1]]
-    V = uy[:uy.shape[0], :ux.shape[1]]
-    abs_u = np.sqrt(U * U + V * V)
-    U = U / abs_u
-    V = V / abs_u
+    u = ux[:uy.shape[0], :ux.shape[1]]
+    v = uy[:uy.shape[0], :ux.shape[1]]
+    abs_u = np.sqrt(u * u + v * v)
+    u = u / abs_u
+    v = v / abs_u
 
     #Plot
-    plt.figure(figsize=(16, 12))
-    plt.xlim(-0.1, Lx * delx * 1.1)
-    plt.ylim(-0.1, Ly * delx * 1.1)
+    if ax is None:
+        import matplotlib.pyplot as plt
+        fig = plt.figure(figsize=(16, 12))
+        ax = fig.add_subplot(111,
+                             projection='3d',
+                             xlim=(-0.1, lx * 1.1),
+                             ylim=(-0.1, ly * 1.1))
+    
+        ax.set_title('t = {} [s]'.format(t * 0.1))
+        im = ax.quiver(x, y, u, v, abs_u, cmap='jet', length=.5)
+        fig.colorbar(im)
+        fig.savefig('./imgs/{:0=10}.png'.format(num))
 
-    plt.quiver(X, Y, U, V, abs_u, cmap='jet', minshaft=3, headwidth=12)
-    plt.title('t = {} [s]'.format(t * 0.1))
-    plt.colorbar()
-    plt.savefig('./imgs/{:0=10}.png'.format(num))
+        plt.clf()
+        plt.cla()
+        plt.close()
+        return None
 
-    plt.clf()
-    plt.cla()
-    plt.close()
+    else:
+        im = ax.quiver(x, y, u, v, abs_u, cmap='jet', length=0.1)
+        return im

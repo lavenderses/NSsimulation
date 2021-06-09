@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def advectionX(ux, uy, delt, delx, dely):
+def advection_x(ux, uy, delt, delx, dely):
     ux_ast = np.zeros_like(ux)
     for x in range(1, ux.shape[0] - 1):
         for y in range(1, ux.shape[1] - 1):            
@@ -35,7 +35,7 @@ def advectionX(ux, uy, delt, delx, dely):
     return ux_ast
 
 
-def advectionY(ux, uy, delt, delx, dely):
+def advection_y(ux, uy, delt, delx, dely):
     uy_ast = np.zeros_like(uy)
     for x in range(1, uy.shape[0] - 1):
         for y in range(1, uy.shape[1] - 1):

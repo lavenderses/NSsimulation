@@ -12,45 +12,45 @@ def divergence(ux_ast, uy_ast, delt, delx, dely):
     return div
 
 
-def Jacobi(div, delt, delx, dely, P, eps, w):
-    P_calc = np.copy(P)
+def jacobi(div, delt, delx, dely, p, eps):
+    p_calc = np.copy(p)
     cnst = pow(delx * dely, 2) * 0.5 / (pow(delx, 2) + pow(dely, 2))
 
-    bef_Px = P[:-2, 1:-1]
-    aft_Px = P[2:, 1:-1]
-    bef_Py = P[1:-1, :-2]
-    aft_Py = P[1:-1, 2:]
+    bef_px = p[:-2, 1:-1]
+    aft_px = p[2:, 1:-1]
+    bef_py = p[1:-1, :-2]
+    aft_py = p[1:-1, 2:]
 
-    P_calc[1:-1, 1:-1] = ((aft_Px + bef_Px) / delx ** 2 +
-                          (aft_Py + bef_Py) / dely ** 2 - div[1:-1, 1:-1]) * cnst
-    error = np.max(np.abs(P_calc[1:-1, 1:-1] - P[1:-1, 1:-1]))
+    p_calc[1:-1, 1:-1] = ((aft_px + bef_px) / delx ** 2 +
+                          (aft_py + bef_py) / dely ** 2 - div[1:-1, 1:-1]) * cnst
+    error = np.max(np.abs(p_calc[1:-1, 1:-1] - p[1:-1, 1:-1]))
     error = max(error, eps)
 
-    return error, P_calc
+    return error, p_calc
 
 
-def Poisson(ux_ast, uy_ast, delt, delx, dely, P, eps, w, count_max):
+def poisson(ux_ast, uy_ast, delt, delx, dely, p, eps, w, count_max):
     error = 1
     count = 0
     div = divergence(ux_ast, uy_ast, delt, delx, dely)
 
     while error > eps or count > count_max:
-        error, P = Jacobi(div, delt, delx, dely, P, eps, w)
+        error, p = jacobi(div, delt, delx, dely, p, eps)
         count += 1
 
-    return P
+    return p
 
 
-def fix_u(ux_ast, uy_ast, P, delt, delx, dely, p_rho):
+def fix_u(ux_ast, uy_ast, p, delt, delx, dely, p_rho):
     ux = np.zeros_like(ux_ast)
     uy = np.zeros_like(uy_ast)
 
-    bef_Px = P[:-1, :]
-    aft_Px = P[1:, :]
-    bef_Py = P[:, :-1]
-    aft_Py = P[:, 1:]
+    bef_px = p[:-1, :]
+    aft_px = p[1:, :]
+    bef_py = p[:, :-1]
+    aft_py = p[:, 1:]
 
-    ux[1:-1, :] = ux_ast[1:-1, :] - (aft_Px - bef_Px) * delt / (delx * p_rho)
-    uy[:, 1:-1] = uy_ast[:, 1:-1] - (aft_Py - bef_Py) * delt / (dely * p_rho)
+    ux[1:-1, :] = ux_ast[1:-1, :] - (aft_px - bef_px) * delt / (delx * p_rho)
+    uy[:, 1:-1] = uy_ast[:, 1:-1] - (aft_py - bef_py) * delt / (dely * p_rho)
 
     return ux, uy
