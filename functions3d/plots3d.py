@@ -2,7 +2,7 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 
 
-def plot(ux, uy, uz, lx, ly, lz, delt, delx, dely, delz, xx, yy, zz, v0, t, num, ax):
+def plot(ux, uy, uz, lx, ly, lz, delt, delx, dely, delz, xx, yy, zz, v0, t, num, ax, dirname=''):
     #Vectors
     u = ux[:uy.shape[0], :uz.shape[1], :ux.shape[2]]
     v = uy[:uy.shape[0], :uz.shape[1], :ux.shape[2]]
@@ -30,13 +30,12 @@ def plot(ux, uy, uz, lx, ly, lz, delt, delx, dely, delz, xx, yy, zz, v0, t, num,
         ax = fig.add_subplot(111,
                              projection='3d',
                              xlim=(-0.1, lx * 1.1),
-                             ylim=(-0.1, ly * 1.1))
-
+                             ylim=(-0.1, ly * 1.1),
+                             zlim=(-0.1, lz * 1.1))
         ax.set_title('t = {} [s]'.format(t * 0.1))
-        ax.colorbar()
         im = ax.quiver(xx, yy, zz, u, v, w,  cmap='jet', length=0.1)
         fig.colorbar(im)
-        fig.savefig('./imgs/{:0=10}.png'.format(num))
+        fig.savefig('{}/{:0=10}.png'.format(dirname, num))
 
         plt.clf()
         plt.cla()

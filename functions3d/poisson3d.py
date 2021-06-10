@@ -18,7 +18,7 @@ def divergence(ux_ast, uy_ast, uz_ast, delt, delx, dely, delz):
     return div
 
 
-def jacobi(div, delt, delx, dely, delz, P, eps, w):
+def jacobi(div, delt, delx, dely, delz, P, eps):
     P_calc = np.copy(P)
     cnst = (delx * dely * delz) ** 2 * 0.5 / (delx ** 2 + dely ** 2 + delz ** 2)
 
@@ -39,16 +39,16 @@ def jacobi(div, delt, delx, dely, delz, P, eps, w):
     return error, P_calc
 
 
-def poisson(ux_ast, uy_ast, uz_ast, delt, delx, dely, delz, P, eps, w, count_max):
+def poisson(ux_ast, uy_ast, uz_ast, delt, delx, dely, delz, p, eps, count_max):
     error = 1
     count = 0
     div = divergence(ux_ast, uy_ast, uz_ast, delt, delx, dely, delz)
 
     while error > eps or count > count_max:
-        error, P = jacobi(div, delt, delx, dely,  delz, P, eps, w)
+        error, p = jacobi(div, delt, delx, dely,  delz, p, eps)
         count += 1
 
-    return P
+    return p
 
 
 def fix_u(ux_ast, uy_ast, uz_ast, P, delt, delx, dely, delz, p_rho):

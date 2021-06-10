@@ -29,7 +29,7 @@ def jacobi(div, delt, delx, dely, p, eps):
     return error, p_calc
 
 
-def poisson(ux_ast, uy_ast, delt, delx, dely, p, eps, w, count_max):
+def poisson(ux_ast, uy_ast, delt, delx, dely, p, eps, count_max):
     error = 1
     count = 0
     div = divergence(ux_ast, uy_ast, delt, delx, dely)
