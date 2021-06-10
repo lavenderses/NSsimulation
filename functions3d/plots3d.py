@@ -32,7 +32,7 @@ def plot(ux, uy, uz, lx, ly, lz, delt, delx, dely, delz, xx, yy, zz, v0, t, num,
                              xlim=(-0.1, lx * 1.1),
                              ylim=(-0.1, ly * 1.1),
                              zlim=(-0.1, lz * 1.1))
-        ax.set_title('t = {} [s]'.format(t * 0.1))
+        ax.set_title('t = {} [s]'.format(t))
         im = ax.quiver(xx, yy, zz, u, v, w,  cmap='jet', length=0.1)
         fig.colorbar(im)
         fig.savefig('{}/{:0=10}.png'.format(dirname, num))

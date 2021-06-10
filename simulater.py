@@ -69,7 +69,7 @@ def simulate(lx, ly, hs, v0, theta, time_range, DELT=0.01, DELL=0.1, RHO=1.293, 
         ux, uy = ini.force_and_first(ux, uy, DELT, hs, v0, theta)
 
         #Plot
-        im = plots.plot(ux, uy, divlx, divly, DELT, DELL, DELL, xx, yy, v0, passed_time, num, ax, dirname=dirname)
+        im = plots.plot(ux, uy, lx, ly, DELT, DELL, DELL, xx, yy, v0, passed_time, num, ax, dirname=dirname)
         if not save and num == 0:
             fig.colorbar(im)
         imgs.append([im])
@@ -174,10 +174,9 @@ if __name__ == '__main__':
             [1, 4, 3],
             [1, 4, 4]]
     v0 = 5.0
-    the = 60
-    pha = 30
+    the = 0
     pha = 0
-    time_range = 1.
+    time_range = 60.
 
     simulate(room_x, room_y, h, v0, the, time_range, save=True)
-#    simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)
+    #simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)
