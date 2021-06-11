@@ -21,7 +21,6 @@ def plot(ux, uy, uz, lx, ly, lz, delt, delx, dely, delz, xx, yy, zz, v0, t, ax):
     zz = zz * delz
 
     colors = np.concatenate([u, v, w])
-    print(np.max(u), np.max(v), np.max(w))
     cmap = matplotlib.cm.bwr
 
     #Plot
