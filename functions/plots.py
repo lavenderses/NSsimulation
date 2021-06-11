@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def plot(ux, uy, lx, ly, delt, delx, dely, xx, yy, v0, t, num, ax, dirname=''):
+def plot(ux, uy, lx, ly, delt, delx, dely, xx, yy, v0, t, ax):
 
     #Vectors
     u = ux[:uy.shape[0], :ux.shape[1]]
@@ -19,22 +19,7 @@ def plot(ux, uy, lx, ly, delt, delx, dely, xx, yy, v0, t, num, ax, dirname=''):
     yy = yy * dely
 
     #Plot
-    if ax is None:
-        import matplotlib.pyplot as plt
-        fig = plt.figure(figsize=(16, 12))
-        ax = fig.add_subplot(111,
-                             xlim=(-0.1, lx * 1.1),
-                             ylim=(-0.1, ly * 1.1))
-        ax.set_title('t = {} [s]'.format(t))
-        im = ax.quiver(xx, yy, u, v, abs_u, cmap='jet')
-        fig.colorbar(im)
-        fig.savefig('{}/{:0=10}.png'.format(dirname, num))
+    ax.set_title('t = {} [s]'.format(t))
+    im = ax.quiver(xx, yy, u, v, abs_u, cmap='jet')
 
-        plt.clf()
-        plt.cla()
-        plt.close()
-        return None
-
-    else:
-        im = ax.quiver(xx, yy, u, v, abs_u, cmap='jet')
-        return im
+    return im

@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.animation as anime
 from decimal import Decimal, ROUND_HALF_UP
 from functions import advection_viscosity as adv
@@ -45,7 +46,7 @@ def simulate(lx, ly, hs, v0, theta, time_range, DELT=0.01, DELL=0.1, RHO=1.293, 
     passed_time = 0
     num = 0
     imgs = []
-    dirname = './imgs2d_{}_{}'.format(v0, theta)
+    dirname = './imgs/2d_{}_{}'.format(v0, theta)
     theta = np.deg2rad(theta)
 
     #points
@@ -53,26 +54,26 @@ def simulate(lx, ly, hs, v0, theta, time_range, DELT=0.01, DELL=0.1, RHO=1.293, 
     yy = np.tile(np.arange(divly + 2), divlx + 2)
 
 
-    if save:
-        os.makedirs(dirname, exist_ok=True)
-        ax = None
-    else:
-        fig = plt.figure(figsize=(20, 14), dpi=100)
-        ax = fig.add_subplot(111,
-                             projection='3d',
-                             xlim=(-0.1, lx * 1.1),
-                             ylim=(-0.1, ly * 1.1))
-        ax.set(xlabel='x', ylabel='y')
+    os.makedirs(dirname, exist_ok=True)
+    plt.rcParams['font.size'] = 26
+    fig = plt.figure(figsize=(20, 14), dpi=100)
 
     while passed_time < time_range:
         #First Condition
         ux, uy = ini.force_and_first(ux, uy, DELT, hs, v0, theta)
 
         #Plot
-        im = plots.plot(ux, uy, lx, ly, DELT, DELL, DELL, xx, yy, v0, passed_time, num, ax, dirname=dirname)
-        if not save and num == 0:
+        ax = fig.add_subplot(111,
+                             xlim=(-0.1, lx * 1.1),
+                             ylim=(-0.1, ly * 1.1))
+        ax.set(xlabel='Room Length x/m', ylabel='Room Height y/m')
+        im = plots.plot(ux, uy, lx, ly, DELT, DELL, DELL, xx, yy, v0, passed_time, ax)
+        if num == 0:
             fig.colorbar(im)
-        imgs.append([im])
+        if not save:
+            imgs.append([im])
+        fig.savefig('{}/{:0=10}.png'.format(dirname, num))
+        plt.cla()
 
         print('time : ', passed_time)
         #Advection
@@ -108,7 +109,7 @@ def simulate3d(lx, ly, lz, hs, v0, theta, phai, time_range, DELT=0.01, DELL=0.1,
     p = np.zeros((divlx + 2, divly + 2, divlz + 2))
     passed_time = 0
     num = 0
-    dirname = './imgs3d_{}_{}_{}'.format(v0, theta, phai)
+    dirname = './imgs/3d_{}_{}_{}'.format(v0, theta, phai)
     theta = np.deg2rad(theta)
     phai = np.deg2rad(phai)
     imgs = []
@@ -117,27 +118,30 @@ def simulate3d(lx, ly, lz, hs, v0, theta, phai, time_range, DELT=0.01, DELL=0.1,
     yy = np.tile(np.array([np.full(divlz + 2, j) for j in range(divly + 2)]).flatten(), divlx + 2)
     zz = np.tile(np.arange(divlz + 2), (divly + 2) * (divlx + 2))
 
-    if save:
-        os.makedirs(dirname, exist_ok=True)
-        ax = None
-    else:
-        fig = plt.figure(figsize=(20, 14), dpi=100)
-        ax = fig.add_subplot(111,
-                             projection='3d',
-                             xlim=(-0.1, lx * 1.1),
-                             ylim=(-0.1, ly * 1.1),
-                             zlim=(-0.1, lz * 1.1))
-        ax.set(xlabel='x', ylabel='y', zlabel='z')
+    os.makedirs(dirname, exist_ok=True)
+    plt.rcParams['font.size'] = 26
+    fig = plt.figure(figsize=(24, 14), dpi=100)
 
     while passed_time < time_range:
         #First Condition
         ux, uy, uz = ini3d.force_and_first(ux, uy, uz, DELT, hs, v0, theta, phai)
 
         #Plot
-        img = plots3d.plot(ux, uy, uz, lx, ly, lz, DELT, DELL, DELL, DELL, xx, yy, zz, v0, passed_time, num, ax, dirname=dirname)
-        if not save and num == 0:
-            fig.colorbar(img)
+        ax = fig.add_subplot(111,
+                             projection='3d',
+                             xlim=(-0.1, lx * 1.1),
+                             ylim=(-0.1, ly * 1.1),
+                             zlim=(-0.1, lz * 1.1))
+        ax.set_xlabel('Room Length x/m', labelpad=20)
+        ax.set_ylabel('Room Depth y/m', labelpad=20)
+        ax.set_zlabel('Room Height z/m', labelpad=20)
+        img = plots3d.plot(ux, uy, uz, lx, ly, lz, DELT, DELL, DELL, DELL, xx, yy, zz, v0, passed_time, ax)
+        fig.colorbar(img)
+        if not save:
             imgs.append([img])
+        fig.savefig('{}/{:0=10}.png'.format(dirname, num))
+        plt.cla()
+        plt.clf()
 
         print('time : ', passed_time)
         #Advection
@@ -178,5 +182,5 @@ if __name__ == '__main__':
     pha = 0
     time_range = 60.
 
-    simulate(room_x, room_y, h, v0, the, time_range, save=True)
-    #simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)
+    #simulate(room_x, room_y, h, v0, the, time_range, save=True)
+    simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)
