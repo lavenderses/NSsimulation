@@ -53,7 +53,6 @@ def simulate(lx, ly, hs, v0, theta, time_range, DELT=0.01, DELL=0.1, RHO=1.293, 
     xx = np.array([np.full(divly + 2, i) for i in range(divlx + 2)])
     yy = np.tile(np.arange(divly + 2), divlx + 2)
 
-
     os.makedirs(dirname, exist_ok=True)
     plt.rcParams['font.size'] = 26
     fig = plt.figure(figsize=(20, 14), dpi=100)
@@ -67,15 +66,16 @@ def simulate(lx, ly, hs, v0, theta, time_range, DELT=0.01, DELL=0.1, RHO=1.293, 
                              xlim=(-0.1, lx * 1.1),
                              ylim=(-0.1, ly * 1.1))
         ax.set(xlabel='Room Length x/m', ylabel='Room Height y/m')
-        im = plots.plot(ux, uy, lx, ly, DELT, DELL, DELL, xx, yy, v0, passed_time, ax)
+        im = plots.plot(ux, uy, lx, ly, DELT, DELL, DELL, xx, yy, v0, num, ax)
         if num == 0:
             fig.colorbar(im)
+        else:
+            fig.savefig('{}/{:0=10}.png'.format(dirname, num))
         if not save:
             imgs.append([im])
-        fig.savefig('{}/{:0=10}.png'.format(dirname, num))
         plt.cla()
 
-        print('time : ', passed_time)
+        print('time : ', num * DELT)
         #Advection
         ux_ast = adv.advection_x(ux, uy, DELT, DELL, DELL)
         uy_ast = adv.advection_y(ux, uy, DELT, DELL, DELL)
@@ -143,7 +143,7 @@ def simulate3d(lx, ly, lz, hs, v0, theta, phai, time_range, DELT=0.01, DELL=0.1,
         plt.cla()
         plt.clf()
 
-        print('time : ', passed_time)
+        print('time : ', num * DELT)
         #Advection
         ux_ast = adv3d.advection_x(ux, uy, uz, DELT, DELL, DELL, DELL)
         uy_ast = adv3d.advection_y(ux, uy, uz, DELT, DELL, DELL, DELL)
@@ -180,7 +180,7 @@ if __name__ == '__main__':
     v0 = 5.0
     the = 0
     pha = 0
-    time_range = 60.
+    time_range = 30.
 
-    #simulate(room_x, room_y, h, v0, the, time_range, save=True)
-    simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)
+    simulate(room_x, room_y, h, v0, the, time_range, save=True)
+    #simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)
