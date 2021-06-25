@@ -2,6 +2,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.animation as anime
 from decimal import Decimal, ROUND_HALF_UP
 from functions import advection_viscosity as adv
@@ -64,16 +65,18 @@ def simulate(lx, ly, hs, v0, theta, time_range, DELT=0.01, DELL=0.1, RHO=1.293, 
         #Plot
         ax = fig.add_subplot(111,
                              xlim=(-0.1, lx * 1.1),
-                             ylim=(-0.1, ly * 1.1))
+                             ylim=(-0.1, ly * 1.1),
+                             aspect='equal',)
         ax.set(xlabel='Room Length x/m', ylabel='Room Height y/m')
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes('right', '5%', pad='3%')
         im = plots.plot(ux, uy, lx, ly, DELT, DELL, DELL, xx, yy, v0, num, ax)
-        if num == 0:
-            fig.colorbar(im)
-        else:
-            fig.savefig('{}/{:0=10}.png'.format(dirname, num))
+        fig.colorbar(im, cax=cax)
+        fig.savefig('{}/{:0=10}.png'.format(dirname, num))
         if not save:
             imgs.append([im])
         plt.cla()
+        plt.clf()
 
         print('time : {:.2f}'.format(num * DELT))
         #Advection
@@ -131,17 +134,18 @@ def simulate3d(lx, ly, lz, hs, v0, theta, phai, time_range, DELT=0.01, DELL=0.1,
                              projection='3d',
                              xlim=(-0.1, lx * 1.1),
                              ylim=(-0.1, ly * 1.1),
-                             zlim=(-0.1, lz * 1.1))
+                             zlim=(-0.1, lz * 1.1),
+                             aspect='auto',)
         ax.set_xlabel('Room Length x/m', labelpad=20)
         ax.set_ylabel('Room Depth y/m', labelpad=20)
         ax.set_zlabel('Room Height z/m', labelpad=20)
         img = plots3d.plot(ux, uy, uz, lx, ly, lz, DELT, DELL, DELL, DELL, xx, yy, zz, v0, num, ax)
-        if num != 0:
-            fig.colorbar(img)
-            fig.savefig('{}/{:0=10}.png'.format(dirname, num))
+        fig.colorbar(img)
+        fig.savefig('{}/{:0=10}.png'.format(dirname, num))
         if not save:
             imgs.append([img])
         plt.cla()
+        plt.clf()
 
         print('time : {:.2f}'.format(num * DELT))
         #Advection
@@ -178,9 +182,9 @@ if __name__ == '__main__':
             [1, 4, 3],
             [1, 4, 4]]
     v0 = 5.0
-    the = 90
+    the = 45
     pha = 0
     time_range = 30.
 
     #simulate(room_x, room_y, h, v0, the, time_range, save=True)
-    simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)
+    #simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)

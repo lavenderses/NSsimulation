@@ -8,10 +8,6 @@ def plot(ux, uy, uz, lx, ly, lz, delt, delx, dely, delz, xx, yy, zz, v0, num, ax
     v = uy[:uy.shape[0], :uz.shape[1], :ux.shape[2]]
     w = uz[:uy.shape[0], :uz.shape[1], :ux.shape[2]]
     abs_u = np.sqrt(u * u + v * v + w * w) + 1e-8
-    '''
-    u = u / abs_u
-    v = v / abs_u
-    w = w / abs_u'''
 
     xx = xx.ravel()
     yy = yy.ravel()
@@ -21,13 +17,6 @@ def plot(ux, uy, uz, lx, ly, lz, delt, delx, dely, delz, xx, yy, zz, v0, num, ax
     w = w.ravel()
     abs_u = abs_u.ravel()
 
-    '''
-    xx = xx[::8]
-    yy = yy[::8]
-    zz = zz[::8]
-    u = u[::8]
-    v = v[::8]
-    w = w[::8]'''
 
     xx = xx * delx
     yy = yy * dely

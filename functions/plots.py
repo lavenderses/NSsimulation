@@ -21,6 +21,6 @@ def plot(ux, uy, lx, ly, delt, delx, dely, xx, yy, v0, num, ax):
 
     #Plot
     ax.set_title('t = {:.2f} [s]'.format(num * delt))
-    im = ax.quiver(xx, yy, u, v, abs_u, cmap='jet')
+    im = ax.quiver(xx, yy, u, v, abs_u, cmap='jet', scale=50)
 
     return im
