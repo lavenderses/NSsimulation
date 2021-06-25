@@ -75,7 +75,7 @@ def simulate(lx, ly, hs, v0, theta, time_range, DELT=0.01, DELL=0.1, RHO=1.293, 
             imgs.append([im])
         plt.cla()
 
-        print('time : ', num * DELT)
+        print('time : {:.2f}'.format(num * DELT))
         #Advection
         ux_ast = adv.advection_x(ux, uy, DELT, DELL, DELL)
         uy_ast = adv.advection_y(ux, uy, DELT, DELL, DELL)
@@ -89,7 +89,7 @@ def simulate(lx, ly, hs, v0, theta, time_range, DELT=0.01, DELL=0.1, RHO=1.293, 
         #Fix each Velocity
         ux, uy = poisson.fix_u(ux_ast, uy_ast, p, DELT, DELL, DELL, RHO)
 
-        passed_time += DELT
+        passed_time = num * DELT
         num += 1
 
     if not save:
@@ -135,15 +135,15 @@ def simulate3d(lx, ly, lz, hs, v0, theta, phai, time_range, DELT=0.01, DELL=0.1,
         ax.set_xlabel('Room Length x/m', labelpad=20)
         ax.set_ylabel('Room Depth y/m', labelpad=20)
         ax.set_zlabel('Room Height z/m', labelpad=20)
-        img = plots3d.plot(ux, uy, uz, lx, ly, lz, DELT, DELL, DELL, DELL, xx, yy, zz, v0, passed_time, ax)
-        fig.colorbar(img)
+        img = plots3d.plot(ux, uy, uz, lx, ly, lz, DELT, DELL, DELL, DELL, xx, yy, zz, v0, num, ax)
+        if num != 0:
+            fig.colorbar(img)
+            fig.savefig('{}/{:0=10}.png'.format(dirname, num))
         if not save:
             imgs.append([img])
-        fig.savefig('{}/{:0=10}.png'.format(dirname, num))
         plt.cla()
-        plt.clf()
 
-        print('time : ', num * DELT)
+        print('time : {:.2f}'.format(num * DELT))
         #Advection
         ux_ast = adv3d.advection_x(ux, uy, uz, DELT, DELL, DELL, DELL)
         uy_ast = adv3d.advection_y(ux, uy, uz, DELT, DELL, DELL, DELL)
@@ -158,7 +158,7 @@ def simulate3d(lx, ly, lz, hs, v0, theta, phai, time_range, DELT=0.01, DELL=0.1,
         #Fix each Velocity
         ux, uy, uz = poisson3d.fix_u(ux_ast, uy_ast, uz_ast, p, DELT, DELL, DELL, DELL, RHO)
 
-        passed_time += DELT
+        passed_time = num * DELT
         num += 1
 
     if not save:
@@ -178,9 +178,9 @@ if __name__ == '__main__':
             [1, 4, 3],
             [1, 4, 4]]
     v0 = 5.0
-    the = 0
+    the = 90
     pha = 0
     time_range = 30.
 
-    simulate(room_x, room_y, h, v0, the, time_range, save=True)
-    #simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)
+    #simulate(room_x, room_y, h, v0, the, time_range, save=True)
+    simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)

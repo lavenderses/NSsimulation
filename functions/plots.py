@@ -20,7 +20,7 @@ def plot(ux, uy, lx, ly, delt, delx, dely, xx, yy, v0, num, ax):
     yy = yy * dely
 
     #Plot
-    ax.set_title('t = {} [s]'.format(num * delt))
+    ax.set_title('t = {:.2f} [s]'.format(num * delt))
     im = ax.quiver(xx, yy, u, v, abs_u, cmap='jet')
 
     return im
