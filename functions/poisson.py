@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def divergence(ux_ast, uy_ast, delt, delx, dely):
     bef_ux = ux_ast[:-1, :]
     aft_ux = ux_ast[1:, :]

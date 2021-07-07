@@ -5,173 +5,174 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import matplotlib.animation as anime
 from decimal import Decimal, ROUND_HALF_UP
-from functions import advection_viscosity as adv
-from functions import initialization as ini
-from functions import poisson
-from functions import plots
-from functions3d import advection_viscosity3d as adv3d
-from functions3d import initialization3d as ini3d
-from functions3d import poisson3d
-from functions3d import plots3d
-
-'''
--------variables-----------------------------------------------------
-lx, ly, lz   : The Lengths of Imaginary Room [m]
-DELT         : The Micro Time
-DELL         : The Micro Length == The Length of The Micro Volume
-divlx, divly : Divided Numbers in x, y Directions
-ux, uy       : Fluid Velocities in x, y Directions at Point (x, y)[numpy array]
-vx, vy       : Temporary Velocities in x, y Directions
-ux_ast       : Calculated Velocity in x Direction at Point (x, y)[numpy array]
-uy_ast       : Calculated Velocity in y Direction at Point (x, y)[numpy array]
-div          : Calculated Divergence at Point (x, y)[numpy array](This Must be Nearly Zero)
-RHO        : Density(Uniform)
-MU           : The Dinamic Viscosity Coeficient
-h            : Fan Height
-v0           : The First Velocity Condition
-EPS          : Tiny Error Constance That Needs in SOR
-CNT_MAX      : The Number That You Wanna Repeat
-p            : The Presure at Point (x, y)
-fx, fy       : The Forces in x, y Directions at Point (x, y)[numpy array]
----------------------------------------------------------------------
-'''
+import functions as F2d
+import functions3d as F3d
 
 
-def simulate(lx, ly, hs, v0, theta, time_range, DELT=0.01, DELL=0.1, RHO=1.293, MU=1.82e-5, EPS=1e-8, CNT_MAX=10000, save=False):
-    #Set Constance Values
-    divlx = int(Decimal(str(lx / DELL)).quantize(Decimal('0'), rounding=ROUND_HALF_UP))
-    divly = int(Decimal(str(ly / DELL)).quantize(Decimal('0'), rounding=ROUND_HALF_UP))
-    ux = np.zeros((divlx + 3, divly + 2))
-    uy = np.zeros((divlx + 2, divly + 3))
-    p = np.zeros((divlx + 2, divly + 2))
-    passed_time = 0
-    num = 0
-    imgs = []
-    dirname = './imgs/2d_{}_{}'.format(v0, theta)
-    theta = np.deg2rad(theta)
+class Simulate2D:
+    def __init__(self, lx, ly, DELT=0.01, DELL=0.1, RHO=1.293, MU=1.82e-5, EPS=1e-8):
+        divlx = int(Decimal(str(lx / DELL)).quantize(Decimal('0'),
+                                                          rounding=ROUND_HALF_UP))
+        divly = int(Decimal(str(ly / DELL)).quantize(Decimal('0'),
+                                                          rounding=ROUND_HALF_UP))
+        self.ux = np.zeros((divlx + 3, divly + 2))
+        self.uy = np.zeros((divlx + 2, divly + 3))
+        self.p = np.zeros((divlx + 2, divly + 2))
+        self.lx, self.ly = lx, ly
+        self.DELT, self.DELL = DELT, DELL
+        self.MU, self.RHO, self.EPS = MU, RHO, EPS
+        self.imgs = []
 
-    #points
-    xx = np.array([np.full(divly + 2, i) for i in range(divlx + 2)])
-    yy = np.tile(np.arange(divly + 2), divlx + 2)
+        #points
+        self.xx = np.array([np.full(divly + 2, i) for i in range(divlx + 2)])
+        self.yy = np.tile(np.arange(divly + 2), divlx + 2)
 
-    os.makedirs(dirname, exist_ok=True)
-    plt.rcParams['font.size'] = 26
-    fig = plt.figure(figsize=(20, 14), dpi=100)
+        plt.rcParams['font.size'] = 26
+        self.fig = plt.figure(figsize=(20, 14), dpi=100)
 
-    while passed_time < time_range:
-        #First Condition
-        ux, uy = ini.force_and_first(ux, uy, DELT, hs, v0, theta)
+    def update(self, hs, v0, theta, time_range, w=None, rad_range=None, CNT_MAX=10000, save=False):
+        lx, ly  = self.lx, self.ly
+        DELT, DELL = self.DELT, self.DELL
+        theta = np.deg2rad(theta)
 
-        #Plot
-        ax = fig.add_subplot(111,
-                             xlim=(-0.1, lx * 1.1),
-                             ylim=(-0.1, ly * 1.1),
-                             aspect='equal',)
-        ax.set(xlabel='Room Length x/m', ylabel='Room Height y/m')
-        divider = make_axes_locatable(ax)
-        cax = divider.append_axes('right', '5%', pad='3%')
-        im = plots.plot(ux, uy, lx, ly, DELT, DELL, DELL, xx, yy, v0, num, ax)
-        fig.colorbar(im, cax=cax)
-        fig.savefig('{}/{:0=10}.png'.format(dirname, num))
+        dirname = './imgs_ex/2d_{}_{}'.format(v0, theta)
+        os.makedirs(dirname, exist_ok=True)
+        passed_time, num = 0, 0
+
+        while passed_time < time_range:
+            self.ux, self.uy, theta, w = F2d.ff(self.ux, self.uy, self.DELT, hs, v0, theta, w, rad_range)
+
+            #Plot
+            ax = self.fig.add_subplot(111,
+                                      xlim=(-0.1, self.lx * 1.1),
+                                      ylim=(-0.1, self.ly * 1.1),
+                                      aspect='equal',)
+            ax.set(xlabel='Room Length x/m', ylabel='Room Height y/m')
+            divider = make_axes_locatable(ax)
+            cax = divider.append_axes('right', '5%', pad='3%')
+            im = F2d.plot(self.ux, self.uy, lx, ly, DELT, DELL, DELL, self.xx, self.yy, v0, num, ax)
+            self.fig.colorbar(im, cax=cax)
+            self.fig.savefig('{}/{:0=10}.png'.format(dirname, num))
+            if not save:
+                self.imgs.append([im])
+            plt.cla()
+            plt.clf()
+
+            print('time : {:.2f}'.format(num * DELT))
+            #Advection
+            ux_ast = F2d.adv_x(self.ux, self.uy, DELT, DELL, DELL)
+            uy_ast = F2d.adv_y(self.ux, self.uy, DELT, DELL, DELL)
+    
+            #Viscosity
+            ux_ast, uy_ast = F2d.vis(self.ux, self.uy, ux_ast, uy_ast, DELT, DELL, DELL, self.MU, self.RHO)
+    
+            #Solce Poisson Eq to Align ux&uy (div u = 0)
+            self.p = F2d.poisson(ux_ast, uy_ast, DELT, DELL, DELL, self.p, self.EPS, CNT_MAX)
+
+            #Fix each Velocity
+            self.ux, self.uy = F2d.fix_u(ux_ast, uy_ast, self.p, DELT, DELL, DELL, self.RHO)
+    
+            passed_time = num * DELT
+            num += 1
+
         if not save:
-            imgs.append([im])
-        plt.cla()
-        plt.clf()
+            anim = anime.ArtistAnimation(self.fig, self.imgs, interval=DELT * 1000)
+            anim.save('./animation_{}_{}.mp4'.format(v0, theta), writer='ffmpeg')
+        
 
-        print('time : {:.2f}'.format(num * DELT))
-        #Advection
-        ux_ast = adv.advection_x(ux, uy, DELT, DELL, DELL)
-        uy_ast = adv.advection_y(ux, uy, DELT, DELL, DELL)
+class Simulate3D:
+    def __init__(self, lx, ly, lz, DELT=0.01, DELL=0.1, RHO=1.293, MU=1.82e-5, EPS=1e-8):
+        #Set Constance Values
+        divlx = int(Decimal(str(lx / DELL)).quantize(Decimal('0'),
+                                                     rounding=ROUND_HALF_UP))
+        divly = int(Decimal(str(ly / DELL)).quantize(Decimal('0'),
+                                                     rounding=ROUND_HALF_UP))
+        divlz = int(Decimal(str(lz / DELL)).quantize(Decimal('0'),
+                                                     rounding=ROUND_HALF_UP))
+        self.ux = np.zeros((divlx + 3, divly + 2, divlz + 2))
+        self.uy = np.zeros((divlx + 2, divly + 3, divlz + 2))
+        self.uz = np.zeros((divlx + 2, divly + 2, divlz + 3))
+        self.p = np.zeros((divlx + 2, divly + 2, divlz + 2))
+        self.lx, self.ly, self.lz = lx, ly, lz
+        self.DELT, self.DELL = DELT, DELL
+        self.MU, self.RHO, self.EPS = MU, RHO, EPS
+        self.imgs = []
+    
+        self.xx = np.array([np.full((divlz + 2) * (divly + 2), i) for i in range(divlx + 2)])
+        self.yy = np.tile(np.array([np.full(divlz + 2, j) for j in range(divly + 2)]).flatten(), divlx + 2)
+        self.zz = np.tile(np.arange(divlz + 2), (divly + 2) * (divlx + 2))
 
-        #Viscosity
-        ux_ast, uy_ast = adv.viscosity(ux, uy, ux_ast, uy_ast, DELT, DELL, DELL, MU, RHO)
+        plt.rcParams['font.size'] = 26
+        self.fig = plt.figure(figsize=(24, 14), dpi=100)
 
-        #Solce Poisson Eq to Align ux&uy (div u = 0)
-        p = poisson.poisson(ux_ast, uy_ast, DELT, DELL, DELL, p, EPS, CNT_MAX)
+    def update(self, hs, v0, theta, phai, time_range, w=None, rad_range=None, CNT_MAX=10000, save=False):
+        lx, ly, lz  = self.lx, self.ly, self.lz
+        DELT, DELL = self.DELT, self.DELL
+        MU, RHO, EPS = self.MU, self.RHO, self.EPS
+        phai = np.deg2rad(phai)
+        passed_time, num = 0, 0
 
-        #Fix each Velocity
-        ux, uy = poisson.fix_u(ux_ast, uy_ast, p, DELT, DELL, DELL, RHO)
+        theta = np.deg2rad(theta)
+        phai = np.deg2rad(phai)
 
-        passed_time = num * DELT
-        num += 1
+        dirname = './imgs_ex/3d_{}_{}_{}'.format(v0, theta, phai)
+        os.makedirs(dirname, exist_ok=True)
 
-    if not save:
-        anim = anime.ArtistAnimation(fig, imgs, interval=100)
-        anim.save('./animation_{}_{}.mp4'.format(v0, theta), writer='ffmpeg')
+        # Particles Array
+        ptclsx = np.random.rand(2000) * lx
+        ptclsy = np.random.rand(2000) * ly
+        ptclsz = np.random.rand(2000) * lz
+        particles = np.stack([ptclsx, ptclsy, ptclsz]).T
 
+        while passed_time < time_range:
+            #First Condition
+            self.ux, self.uy, self.uz = F3d.ff(self.ux, self.uy, self.uz, DELT, hs, v0, theta, phai)
 
+            #Plot
+            ax = self.fig.add_subplot(111,
+                                      projection='3d',
+                                      xlim=(-0.1, lx * 1.1),
+                                      ylim=(-0.1, ly * 1.1),
+                                      zlim=(-0.1, lz * 1.1),)
+            ax.set_xlabel('Room Length x/m', labelpad=20)
+            ax.set_ylabel('Room Depth y/m', labelpad=20)
+            ax.set_zlabel('Room Height z/m', labelpad=20)
+            ax.set_title('t = {:.2f} [s]'.format(num * DELT))
 
-def simulate3d(lx, ly, lz, hs, v0, theta, phai, time_range, DELT=0.01, DELL=0.1, RHO=1.293, MU=1.82e-5, EPS=1e-8, CNT_MAX=10000, save=False):
-    #Set Constance Values
-    divlx = int(Decimal(str(lx / DELL)).quantize(Decimal('0'), rounding=ROUND_HALF_UP))
-    divly = int(Decimal(str(ly / DELL)).quantize(Decimal('0'), rounding=ROUND_HALF_UP))
-    divlz = int(Decimal(str(lz / DELL)).quantize(Decimal('0'), rounding=ROUND_HALF_UP))
-    ux = np.zeros((divlx + 3, divly + 2, divlz + 2))
-    uy = np.zeros((divlx + 2, divly + 3, divlz + 2))
-    uz = np.zeros((divlx + 2, divly + 2, divlz + 3))
-    p = np.zeros((divlx + 2, divly + 2, divlz + 2))
-    passed_time = 0
-    num = 0
-    dirname = './imgs/3d_{}_{}_{}'.format(v0, theta, phai)
-    theta = np.deg2rad(theta)
-    phai = np.deg2rad(phai)
-    imgs = []
+            #img = F3d.plot(self.ux, self.uy, self.uz, lx, ly, lz, DELT, DELL, DELL, DELL, self.xx, self.yy, self.zz, v0, ax)
+            img = F3d.p_plot(self.ux, self.uy, self.uz, particles, lx, ly, lz, DELT, DELL, DELL, DELL, v0, ax)
+            #self.fig.colorbar(img)
+            self.fig.savefig('{}/{:0=10}.png'.format(dirname, num))
+            if not save:
+                self.imgs.append([img])
+            plt.cla()
+            plt.clf()
 
-    xx = np.array([np.full((divlz + 2) * (divly + 2), i) for i in range(divlx + 2)])
-    yy = np.tile(np.array([np.full(divlz + 2, j) for j in range(divly + 2)]).flatten(), divlx + 2)
-    zz = np.tile(np.arange(divlz + 2), (divly + 2) * (divlx + 2))
+            print('time : {:.2f}'.format(num * DELT))
+            #Advection
+            ux_ast = F3d.adv_x(self.ux, self.uy, self.uz, DELT, DELL, DELL, DELL)
+            uy_ast = F3d.adv_y(self.ux, self.uy, self.uz, DELT, DELL, DELL, DELL)
+            uz_ast = F3d.adv_z(self.ux, self.uy, self.uz, DELT, DELL, DELL, DELL)
 
-    os.makedirs(dirname, exist_ok=True)
-    plt.rcParams['font.size'] = 26
-    fig = plt.figure(figsize=(24, 14), dpi=100)
+            #Viscosity
+            ux_ast, uy_ast, uz_ast = F3d.vis(self.ux, self.uy, self.uz, ux_ast, uy_ast, uz_ast, DELT, DELL, DELL, DELL, MU, RHO)
 
-    while passed_time < time_range:
-        #First Condition
-        ux, uy, uz = ini3d.force_and_first(ux, uy, uz, DELT, hs, v0, theta, phai)
+            #Solce Poisson Eq to Align ux&uy (div u = 0)
+            self.p = F3d.poisson(ux_ast, uy_ast, uz_ast, DELT, DELL, DELL, DELL, self.p, EPS, CNT_MAX)
 
-        #Plot
-        ax = fig.add_subplot(111,
-                             projection='3d',
-                             xlim=(-0.1, lx * 1.1),
-                             ylim=(-0.1, ly * 1.1),
-                             zlim=(-0.1, lz * 1.1),
-                             aspect='auto',)
-        ax.set_xlabel('Room Length x/m', labelpad=20)
-        ax.set_ylabel('Room Depth y/m', labelpad=20)
-        ax.set_zlabel('Room Height z/m', labelpad=20)
-        img = plots3d.plot(ux, uy, uz, lx, ly, lz, DELT, DELL, DELL, DELL, xx, yy, zz, v0, num, ax)
-        fig.colorbar(img)
-        fig.savefig('{}/{:0=10}.png'.format(dirname, num))
+            #Fix each Velocity
+            self.ux, self.uy, self.uz = F3d.fix_u(ux_ast, uy_ast, uz_ast, self.p, DELT, DELL, DELL, DELL, RHO)
+
+            passed_time = num * DELT
+            num += 1
+
         if not save:
-            imgs.append([img])
-        plt.cla()
-        plt.clf()
-
-        print('time : {:.2f}'.format(num * DELT))
-        #Advection
-        ux_ast = adv3d.advection_x(ux, uy, uz, DELT, DELL, DELL, DELL)
-        uy_ast = adv3d.advection_y(ux, uy, uz, DELT, DELL, DELL, DELL)
-        uz_ast = adv3d.advection_z(ux, uy, uz, DELT, DELL, DELL, DELL)
-
-        #Viscosity
-        ux_ast, uy_ast, uz_ast = adv3d.viscosity(ux, uy, uz, ux_ast, uy_ast, uz_ast, DELT, DELL, DELL, DELL, MU, RHO)
-
-        #Solce Poisson Eq to Align ux&uy (div u = 0)
-        p = poisson3d.poisson(ux_ast, uy_ast, uz_ast, DELT, DELL, DELL, DELL, p, EPS, CNT_MAX)
-
-        #Fix each Velocity
-        ux, uy, uz = poisson3d.fix_u(ux_ast, uy_ast, uz_ast, p, DELT, DELL, DELL, DELL, RHO)
-
-        passed_time = num * DELT
-        num += 1
-
-    if not save:
-        anim = anime.ArtistAnimation(fig, imgs, interval=100)
-        anim.save('./animation_{}_{}_{}.mp4'.format(v0, theta, phai), writer='ffmpeg')
+            anim = anime.ArtistAnimation(self.fig, self.imgs, interval=100)
+            anim.save('./animation_{}_{}_{}.mp4'.format(v0, theta, phai), writer='ffmpeg')
 
 
 if __name__ == '__main__':
-    #Set Each Constance
+    # Set Each Constance
     room_x = 4.0
     room_y = 2.0
     room_z = 2.5
@@ -182,9 +183,19 @@ if __name__ == '__main__':
             [1, 4, 3],
             [1, 4, 4]]
     v0 = 5.0
-    the = 45
+    the = 0
     pha = 0
     time_range = 30.
 
-    #simulate(room_x, room_y, h, v0, the, time_range, save=True)
-    #simulate3d(room_x, room_y, room_z, h_3d, v0, the, pha, time_range, save=True)
+    rng = np.deg2rad(60)
+    rad_range = [-rng, rng]
+    T = 18.0
+    w = 2 * np.pi / T
+
+    '''
+    model = Simulate2D(room_x, room_y)
+    model.update(h, v0, the, time_range, w=w, rad_range=rad_range)
+    '''
+    model = Simulate3D(room_x, room_y, room_z)
+    model.update(h_3d, v0, the, pha, time_range)
+    #'''
