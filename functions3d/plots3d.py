@@ -1,8 +1,27 @@
 import numpy as np
 import matplotlib.pyplot as plt
+"""Plot Air Velocity Field in Arrow Style.
+"""
 
 
-def plot(ux, uy, uz, lx, ly, lz, delt, delx, dely, delz, xx, yy, zz, v0, num, ax):
+def plot(ux, uy, uz, delx, dely, delz, xx, yy, zz, ax):
+    """Plot Air Velocity Field Arrow.
+
+    Args:
+        ux (np.ndarray): Air velocity in x dimension.
+        uy (np.ndarray): Air velocity in y dimension.
+        uz (np.ndarray): Air velocity in z dimension.
+        delx (float): Infinitensimal displacement in x dimension.
+        dely (float): Infinitensimal displacement in y dimension.
+        delz (float): Infinitensimal displacement in z dimension.
+        xx (np.ndarray): Cordinate array.
+        yy (np.ndarray): Cordinate array.
+        zz (np.ndarray): Cordinate array.
+        ax (matplotlib.pyplot.axes): Ax object prepared in main function.
+
+    Returns:
+        im(matplotlib.pyplot.axes): Ploted ax object.
+    """
     #Vectors
     u = ux[:uy.shape[0], :uz.shape[1], :ux.shape[2]]
     v = uy[:uy.shape[0], :uz.shape[1], :ux.shape[2]]
@@ -26,7 +45,6 @@ def plot(ux, uy, uz, lx, ly, lz, delt, delx, dely, delz, xx, yy, zz, v0, num, ax
     c = plt.cm.jet(c)
 
     #Plot
-    ax.set_title('t = {:.2f} [s]'.format(num * delt))
     im = ax.quiver(xx, yy, zz, u, v, w, length=0.1, colors=c, cmap='jet', normalize=True)
 
     return im
