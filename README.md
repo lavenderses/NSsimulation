@@ -1,4 +1,5 @@
 # THE SIMULATION OF NAVIER STOKES EQUATION
+![0000011999](https://user-images.githubusercontent.com/72122101/125426234-06c142ab-96f0-415d-8452-c9d174bda9cd.png "Example Output Image.")
 This is a simulation of Navier Stokes Equation.
 I still keep on modifying these files to opimize, make it faster, greater.
 Let me know when you find something wrong or could be better.
