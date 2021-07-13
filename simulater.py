@@ -1,4 +1,5 @@
 import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -301,16 +302,17 @@ if __name__ == '__main__':
     T = 18.0
     w = 2 * np.pi / T
 
-    '''
-    the = 0
-    v0 = 5.0
-    model = Simulate2D(room_x, room_y)
-    model.update(h, v0, the, time_range, arrow=False)
-    '''
-    the = 60
-    pha = 30
-    v0 = 15.0
-    time_range = 120.
-    model = Simulate3D(room_x, room_y, room_z)
-    model.update(h_3d, v0, the, pha, time_range, arrow=False)
-    #'''
+    if sys.argv[1] == '2D':
+        the = 0
+        v0 = 5.0
+        model = Simulate2D(room_x, room_y)
+        model.update(h, v0, the, time_range, arrow=False)
+    elif sys.argv[1] == '3D':
+        the = 60
+        pha = 30
+        v0 = 15.0
+        time_range = 120.
+        model = Simulate3D(room_x, room_y, room_z)
+        model.update(h_3d, v0, the, pha, time_range, arrow=False)
+    else:
+        raise ValueError('The command line argument must be 2D or 3D.')
